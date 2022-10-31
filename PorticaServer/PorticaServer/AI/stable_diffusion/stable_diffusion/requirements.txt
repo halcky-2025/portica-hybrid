@@ -1,0 +1,18 @@
+requests
+Pillow
+opencv-python
+--extra-index-url https://download.pytorch.org/whl/cu116
+torch
+torchvision
+torchaudio
+OmegaConf
+tqdm
+imwatermark
+invisible-watermark
+einops
+pytorch_lightning
+diffusers
+transformers
+urllib3
+ftfy
+kornia

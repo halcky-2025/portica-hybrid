@@ -1,0 +1,274 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<form id="form" action="./post" method="post" enctype="multipart/form-data">
+    <div>
+        <select id="aitype" name="post_type" style="margin:10px">
+{% for key, value in projects.items %}
+            <option value="{{ key }}">{{ value.name }}</option>
+{% endfor %}
+        </select>
+    </div>
+    <div id="input">
+
+    </div>
+</form>
+<div class="tab_wrap">
+
+    <div class="tab_area">
+        <label class="tab1_label" id="tb1" for="tab1" onclick="clic(1)">全リスト</label>
+        <label class="tab2_label" id="tb2" for="tab2" onclick="clic(2)">マイリスト</label>
+        <label class="tab3_label" id="tb3" for="tab3" onclick="clic(3)">図書館</label>
+    </div>
+    <div class="panel_area">
+        <div id="panel1" class="tab_panel">
+        </div>
+        <div id="panel2" class="tab_panel">
+        </div>
+        <div id="panel3" class="tab_panel">
+        </div>
+        <div id="panel4" class="tab_panel">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style type="text/css">
+    .info {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background-color: white;
+    }
+
+    .tab_wrap {
+        width: 100%;
+        margin: 20px auto;
+        background-color: #99F;
+    }
+
+    .tab_area {
+        font-size: 0;
+        margin: 0 10px;
+    }
+
+        .tab_area label {
+            width: 30%;
+            margin: 0 5px;
+            display: inline-block;
+            padding: 12px 0;
+            color: #999;
+            background: #ddd;
+            text-align: center;
+            font-size: 13px;
+            cursor: pointer;
+            transition: ease 0.2s opacity;
+        }
+
+            .tab_area label:hover {
+                opacity: 0.5;
+            }
+
+    .panel_area {
+        background: #fff;
+    }
+
+    .tab_panel {
+        width: 100%;
+        padding: 0px 0;
+        display: none;
+    }
+
+    .tab_panel p {
+        font-size: 14px;
+        letter-spacing: 1px;
+        text-align: center;
+    }
+
+    .tab_area label.active {
+        background: #fff;
+        color: #000;
+    }
+
+    .tab_panel.active {
+        display: block;
+    }
+
+    .image {
+        width: 80%
+    }
+
+    @media screen and (min-width: 1024px) {
+
+        /* スタイルの設定 */
+        .box {
+            width: 49%;
+            display: inline-block;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+
+    {% load static %}
+
+<script type="text/javascript">
+    const form = document.getElementById("form")
+    inputs = {}
+    $("#aitype").change(function () {
+        console.log(inputs[$(this).val()])
+        if (inputs[$(this).val()] === undefined) {
+            var req = new XMLHttpRequest();
+            req.open("GET", "/input?name=" + $(this).val())
+            req.onreadystatechange = function () {
+                if (req.readyState === 4 && req.status === 200) {
+                    inputs[$('#aitype').val()] = req.responseText
+                    $('#input').html(inputs[$('#aitype').val()])
+                }
+            }
+            req.send(null)
+        }
+        else $('#input').html(inputs[$(this).val()])
+    })
+    $("#aitype").change()
+    async function submi (ok) {
+        const formData = new FormData(form)
+        const action = form.getAttribute("action")
+        const options = {
+            method: 'POST',
+            body: formData,
+        }
+        const res = await fetch(action, options)
+        const text = await res.text()
+        if (text == "") alert("現在、荒らし対策のため、新規ユーザーを停止しています。誠に申し訳ありません。");
+        if (text == ":m") alert("ただいまメンテナンス中です。")
+        else if (text == ":t") {
+            alert("アニキャラ作画AI、wifu-diffusionを使うには、右上のもの語る/参加するから、twitter認証してください。")
+        }
+        else if (text == "no") {
+            alert("promptを入力してください。")
+            return
+        }
+        ok(text)
+    }
+    async function task(ok) {
+        const formData = new FormData(form)
+        const action = "./task"
+        const options = {
+            method: 'POST',
+            body: formData,
+        }
+        const res = await fetch(action, options)
+        const text = await res.text()
+        if (text == "") alert("現在、荒らし対策のため、新規ユーザーを停止しています。誠に申し訳ありません。");
+        if (text == ":m") alert("ただいまメンテナンス中です。")
+        else if (text == ":t") {
+            alert("アニキャラ作画AI、wifu-diffusionを使うには、右上のもの語る/参加するから、twitter認証してください。")
+        }
+        else if (text == "no") {
+            alert("promptを入力してください。")
+            return
+        }
+        ok(text)
+    }
+    var secret = ""
+    var panel = $("#panel1")
+    var c = 1
+    function clic(n) {
+        panel = $("#panel" + c)
+        panel.removeClass('active')
+        var tab = $("#tb" + c)
+        if (c != 4) {
+            tab.removeClass("active")
+            if (c == 3) interval = false
+        }
+        else {
+            secret = ''
+            interval = false
+        }
+        c = n
+        panel = $('#panel' + c)
+        var tab = $("#tb" + c)
+        if (c != 4) {
+            tab.addClass("active")
+            if (c == 3) interval = true
+        }
+        else {
+            interval = true
+        }
+        panel.addClass("active")
+    }
+    var coun = 0
+    function list() {
+        var csave = c
+        var panelsave = panel
+        var req = new XMLHttpRequest();
+        str = "" + csave
+        if (csave == 4) str += "&secret=" + secret
+        req.open("GET", "/list?c=" + str)
+        req.onreadystatechange = function () {
+            if (req.readyState === 4 && req.status === 200) {
+                if (csave == 4) {
+                    panelsave.html(req.responseText)
+                    return
+                }
+                var o = JSON.parse(req.responseText)
+                if (0 <= csave && csave <= 3) {
+                    var str = ""
+                    for (var i = 0; i < o.length; i++) {
+                        var d = o[i]
+                        str += i + ":" + d;
+                    }
+                    if (panels[csave] == str) {
+                        return
+                    }
+                    panels[csave] = str
+                }
+                var n1 = 1
+                var ret = ""
+                if (window.innerWidth > 2048) n1 = 4
+                else if (window.innerWidth > 1536) n1 = 3
+                else if (window.innerWidth > 1024) n1 = 2
+                for (var i = 0; i < o.length; i++) {
+                    if (i != 0 && i % n1 == 0) ret += "<hr/>"
+                    ret += "<div style='width:" + 100 / n1 + "%;display:inline-block;vertical-align:top'>"
+                    ret += o[i]
+                    ret +="</div>"
+                }
+                panelsave.html(ret)
+            }
+        }
+        req.send(null)
+    }
+    var panels = ["", "", ""]
+    var lis = list
+    var interval = false
+    var cbase = 1
+    function show(sec) {
+        cbase = c
+        clic(4)
+        secret = sec
+        list()
+    }
+    function clos() {
+        clic(cbase)
+    }
+    setInterval(function () {
+        if (interval) return
+        //coun = (coun +   1) % 8
+        list();
+    }, 10 * 1000)
+    clic(2)
+    list()
+    clic(1)
+    list()
+    clic(3)
+    list()
+    setTimeout(function () {
+        if (c == 3) clic(1)
+    }, 7 * 1000)
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+﻿<div>プロンプト{{prompt}}</div>
+<div>FPS{{options.fps}}</div>
+<div>フレーム数{{options.max_frames}}</div>
+<div>Translation:X{{options.translation_x}}&nbsp;Y{{options.translation_y}}</div>
+<div>Angle{{ options.angle}}</div>
+<div>Zoom{{options.zoom}}</div>
+<div>コントラスト{{options.contrast}}</div>
+<div>ノイズ{{options.noise}}</div>
+<div>Strength{{options.strength}}</div>
+<div>Scale{{options.scale}}</div>
+<div>Seed{{options.seed}}</div>
+<div>Width{{options.W}}px</div>
+<div>Height{{options.H}}px</div>
+{%  if  options.init_img %}
+初期画像
+<img style="width:20%" src="/r/{{ options.init_img.address}}" />
+{% endif %}
+{% if output_type == "mov" %}
+<video controls style="width:100%">
+    <source src="/r/{{ output }}" type="video/mp4">
+</video>
+{% elif output_type == 'ordering' %}
+登録エラー
+{% else %}
+生成中
+{% endif %}

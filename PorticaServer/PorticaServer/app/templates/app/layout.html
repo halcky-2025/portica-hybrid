@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=320, initial-scale=1.0">
+    <title>{{ title }} - ハイブリッド日本人録ポルティカ</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
+    <!-- Global site tag (gtag.js) - Google Analytics --><!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GBWGFWKH63"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-GBWGFWKH63');
+    </script>
+    {% block styles %}{% endblock %}
+    <script src="{% static 'app/scripts/modernizr-2.6.2.js' %}"></script>
+    <script>
+        // Load the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/player_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var youtube_list = []
+        function onYouTubePlayerAPIReady() {
+            if (window.innerWidth < 640) {
+                height = '180'
+                width = ' 320'
+            }
+            else {
+                height = '360'
+                width = '640'
+            }
+            for (var i = 0; i < youtube_list.length; i++) {
+                player = new YT.Player(youtube_list[i], {
+                    height: height,
+                    width: width,
+                    videoId: youtube_list[i]
+                });
+            }
+        }
+    </script>
+</head>
+
+<body style="width:100% !important;">
+    <div class="navbar navbar-inverse navbar-fixed-top" style="background-color:#000000">
+        <div class="container">
+            <div>
+                <a href="/" class="navbar-brand" style="font-size:16px; padding:15px 2px 15px 0px;"> <img style="width:26px" src="/s/images/ufo.png" />ハイブリッド日本人録ポルティカ</a>
+                {% if username %}
+                <div id="logined" style="display:inline-block; height:35px; vertical-align:top; float:right;">
+                    <img id="prof" src="{{ userprofile }}" style="width:30px; height:30px; margin-top:10px; border-radius:50%;" />
+                    <!--a href="{% url 'post' %}"><img src="/s/images/file.jpg" style="width:30px; height:30px; margin-top:10px;"/></a-->
+                </div>
+                {% else %}
+                <div id="logouted" style="display:inline-block; float:right; padding-top:12px;">
+                    <a href="/auth" style="vertical-align: middle;font-size:12px;line-height:14px;color:#999;"><span id="s1" style="position:relative">も</span><span id="s2" style="position:relative">の</span><span id="s3" style="position:relative">語</span><span id="s4" style="position:relative">る</span></a>
+                </div>
+                <script type="text/javascript">
+                    var heights = [["0px", "3px", "6px", "4px"], ["1px", "4px", "9px", "4px"], ["2px", "5px", "12px", "3px"], ["2px", "6px", "10px", "3px"], ["2px", "7px", "8px", "3px"], ["3px", "9px", "6px", "2px"], ["2px", "6px", "4px", "2px"], ["1px", "4px", "3px", "1px"], ["0px", "2px", "1px", "0px"], ["0px", "0px", "0px", "0px"], ["0px", "3px", "6px", "4px"], ["1px", "4px", "9px", "4px"], ["2px", "5px", "12px", "3px"], ["2px", "6px", "10px", "3px"], ["2px", "7px", "8px", "3px"], ["3px", "9px", "6px", "2px"], ["2px", "6px", "4px", "2px"], ["1px", "4px", "3px", "1px"], ["0px", "2px", "1px", "0px"], ["0px", "0px", "0px", "0px"], ["0px", "3px", "6px", "4px"], ["1px", "4px", "9px", "4px"], ["2px", "5px", "12px", "3px"], ["2px", "6px", "10px", "3px"], ["2px", "7px", "8px", "3px"], ["3px", "9px", "6px", "2px"], ["2px", "6px", "4px", "2px"], ["1px", "4px", "3px", "1px"], ["0px", "2px", "1px", "0px"], ["0px", "0px", "0px", "0px"]]
+                    var count = 0;
+                    var s1 = document.getElementById("s1")
+                    var s2 = document.getElementById("s2")
+                    var s3 = document.getElementById("s3")
+                    var s4 = document.getElementById("s4")
+                    function init() {
+                        s1.style.top = heights[count][0]
+                        s2.style.top = heights[count][1]
+                        s3.style.top = heights[count][2]
+                        s4.style.top = heights[count][3]
+                        count++
+                        if (count == heights.length) {
+                            setTimeout(function () {
+                                s1.innerText = "参"
+                                s2.innerText = "加"
+                                s3.innerText = "す"
+                                s4.innerText = "る"
+                            }, 1000)
+                            return
+                        }
+                        setTimeout(init, 60)
+                    }
+                    setTimeout(init, 60)
+                </script>
+                {% endif %}
+            </div>
+            <div id="block" style="position:absolute; background-color:black; width:100%; max-width:100%; left:0px; padding-left:15px; display:none; top:50px;">
+                <ul class="nav navbar-nav">
+                </ul>
+            </div>
+            <script type="text/javascript">
+                /*var visible = false
+                window.onclick = function (e) {
+                    var block = document.getElementById("block")
+                    if (visible) {
+                        block.style.display = "none"
+                    }
+                }
+                function show(e) {
+                    e.stopPropagation()
+                    var block = document.getElementById("block")
+                    if (visible) {
+                        block.style.display = "none"
+                    }
+                    else {
+                        block.style.display = "block"
+                    }
+                    visible = !visible
+                }
+                var prof = document.getElementById("prof")
+                if (prof != null) prof.onclick = show
+                document.getElementById("block").onclick = function (e) {
+                    e.stopPropagation()
+                }*/
+            </script>
+        </div>
+    </div>
+
+    <div id="main" style="margin:0px;padding:0px;">
+        {% block content %}{% endblock %}
+        <hr />
+        <footer>
+            <p>&copy; {{ year }} - PlatonicAI</p>
+        </footer>
+    </div>
+
+    <script src="{% static 'app/scripts/jquery-1.10.2.js' %}"></script>
+    <script src="{% static 'app/scripts/bootstrap.js' %}"></script>
+    <script src="{% static 'app/scripts/respond.js' %}"></script>
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

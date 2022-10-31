@@ -1,0 +1,49 @@
+プロンプト<input type="text" name="prompt" /><br />
+<button type="button" id="submit" style="padding:0px 60px">生成</button>こっそり<input type="checkbox" name="mute" value="mute"/><br />
+<select name="model">
+    <option value="sd1.4">Stable Diffusion v1.4</option>
+    <option value="wd1.2">Wifu Diffusion v1.2</option>
+</select><br />
+<div id="opt2" class="opt">
+    <span style="color:aqua">テキスト->画像</span><br />
+    <input type="range" value="512" min="512" max="1024" step="64" name="W" id="w" /><span id="wt">512</span>px<br />
+    <input type="range" value="512" min="512" max="1024" step="64" name="H" id="h" /><span id="ht">512</span>px<br /><br />
+    <button type="button" onclick="opt(3)">カスタム(画像->画像)</button>
+</div>
+<div id="opt3" class="opt">
+    <span style="color:aqua">画像->画像</span><br />
+    参考画像<input type="file" name="init_img" id="init_img" />
+    strength<input type="range" value="0.75" min="0" max="0.99" step="0.01" name="strength" id="s" /><span id="st">0.75</span><br /><br />
+    <button type="button" onclick="opt(2)">カスタム(テキスト->画像)</button>
+</div>
+<script type="text/javascript">
+    var submit = document.getElementById("submit")
+    submit.onclick = function () {
+        submi(function () {
+            document.getElementById("prompt").value = ""
+            document.getElementById("init_img").value = ""
+        })
+    }
+    setInterval(function () {
+        $('#wt').text($('#w').val())
+        $('#ht').text($('#h').val())
+        $('#st').text($('#s').val())
+    })
+    var op = 2
+    function opt(n) {
+        var opti = document.getElementById("opt" + op)
+        opti.className = "opt"
+        op = n
+        opti = document.getElementById("opt" + op)
+        opti.className = "opt active"
+    }
+    opt(2)
+</script>
+<style type="text/css">
+    .opt {
+        display: none;
+    }
+    .opt.active {
+        display: block;
+    }
+</style>

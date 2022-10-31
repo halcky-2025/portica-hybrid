@@ -1,0 +1,8 @@
+django
+urllib3
+deepl
+torch
+tweepy
+django-redis
+psycopg2-binary
+apscheduler

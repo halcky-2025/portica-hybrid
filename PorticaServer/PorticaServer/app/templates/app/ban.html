@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Member表</title>
+</head>
+
+<body>
+    <form action="./ban" method="get">
+        prompt<input type="text" name="prompt" value="" />
+        browser<input type="text" name="browser" value="" />
+        ip<input type="text" name="ip" value="" />
+        mute<input type="text" name="mute" value="" />
+        <input type="submit" />
+    </form>
+
+    {% for d in pickers %}
+    <div style="width:100%;">
+        <div>{{ d.post_id }}@{{d.ip}}@{{d.browser}}@{{d.mute}}@{{ d.prompt}}</div>
+    </div>
+
+        {% for d2 in d.users %}
+        <div style="background-color:aqua">
+            <div><a href="./ban?ip={{ d2.ip}}">{{ d2.ip}}</a>@ <a href="./ban?browser={{d2.browser}}">{{ d2.browser}}</a></div>
+            <input type="button" onclick="selec('{{ d2.user_id }}', 'mute')" value="ミュート"/>
+            <input type="button" onclick="selec('{{ d2.user_id }}', '')" value="正常"/>
+            <span id="{{ d2.user_id }}">{{ d2.mute }}</span>
+        </div>
+        {% endfor %}
+    {% endfor %}
+</body>
+
+</html>
+<script type="text/javascript">
+    function selec(userid, mute) {
+        var req = new XMLHttpRequest();
+        req.open("GET", "/banexe?id=" + userid + "&mute=" + mute);
+        req.onreadystatechange = function () {
+            if (req.readyState === 4 && req.status === 200) {
+                alert(req.responseText)
+            }
+        }
+        req.send(null)
+    }
+</script>

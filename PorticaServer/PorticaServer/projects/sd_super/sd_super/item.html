@@ -1,0 +1,87 @@
+﻿<div>{{ prompt }}({{post_type}})<input type="button" value="詳細" onclick="show('{{ secret }}')" /></div>
+{% if output_type == "json" %}
+<div id="xyform_{{ c }}_{{num}}"></div>
+<script type="text/javascript">
+    var datas = {{ options.json | safe}}
+    var output = {{ output | safe}}
+    var type = "{{ output_type | safe}}"
+</script>
+<script type="text/javascript">
+    var x = -1
+    var y = -1
+    var is = []
+    var vs = []
+    var ds = []
+    var id = 0
+    var fn;
+    function dimensions() {
+        var label = document.getElementById("label")
+        for (var i = 0; i < datas.length; i++) {
+            for (var j = 0; j < datas[i].length; j++) {
+                if (datas[i][j]["ret"].length >= 2) {
+                    (function () {
+                        ds.push({ "k": datas[i][j]["key"], "i": i, "j": j })
+                        is.push(0)
+                        var ins = id
+                        //$("#s" + ins).change(function () {
+                        //    var val = $(this).val()
+                        fn = function () {
+                            var n = 0
+                            var i = ds[ins]["i"]
+                            for (var k = 0; k < ds.length; k++) {
+                                if (ds[ins]["i"] == ds[k]["i"]) {
+                                    if (n < datas[i][ds[k]["j"]]["ret"].length) {
+                                        is[k] = n
+                                    }
+                                    else is[k] = datas[i][ds[k]["j"]]["ret"].length - 1
+                                }
+                            }
+                            xyform()
+                        }
+                    })()
+                    id++
+                }
+            }
+        }
+    }
+    function xyform() {
+        var xy = document.getElementById("xyform_{{ c }}_{{ num }}")
+        while (xy.firstChild) {
+            xy.removeChild(xy.firstChild);
+        }
+        var xs = [], ys = []
+        var xmax, ymax
+        var ix, iy
+        var reverse = false
+        var img = document.createElement("img")
+        img.style.width="100%"
+        img.src = "/r/" + output[makekey(-1, -1, reverse)]["output"]
+        xy.appendChild(img)
+    }
+    function makekey(x, y, reverse) {
+        var k = ""
+        for (var i = 0; i < ds.length; i++) {
+            if (k != "") k += ";"
+            var n = 0
+            if (reverse) {
+                n = is[i]
+            }
+            else {
+                n = is[i]
+            }
+            var ret = datas[ds[i]["i"]][ds[i]["j"]]["ret"]
+            if (n < ret.length) k += ret[n]
+            else k += ret[ret.length - 1]
+        }
+        return k
+    }
+    dimensions()
+    if (fn !== undefined) fn()
+    else {
+        xyform()
+    }
+
+</script>
+{% else %}
+生成中
+{% endif %}

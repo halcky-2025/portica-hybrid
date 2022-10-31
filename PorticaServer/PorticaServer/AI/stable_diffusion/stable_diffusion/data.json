@@ -1,0 +1,7 @@
+{
+  ":img.init_img": null,
+  "prompt": "",
+  "W": 512,
+  "H": 512,
+  "strength":  0.75
+}

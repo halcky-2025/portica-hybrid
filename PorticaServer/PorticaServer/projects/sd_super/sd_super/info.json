@@ -1,0 +1,7 @@
+﻿{
+  "name": "スーパーDiffusion",
+  "version": "0.1",
+  "task": "AI:stable_diffusion",
+  "complete": "..",
+  "totask":  "pararell"
+}

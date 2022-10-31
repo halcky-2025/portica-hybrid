@@ -1,0 +1,85 @@
+プロンプト<input type="text" name="prompt" id="prompt"/><br />
+<button type="button" id="submit" style="padding:0px 60px">生成</button>こっそり<input type="checkbox" name="mute" value="mute"/><br />
+<select name="model">
+    <option value="sd1.4">Stable Diffusion v1.4</option>
+    <option value="wd1.2">Wifu Diffusion v1.2</option>
+</select><br />
+PLMS<input type="checkbox" name="plms" value="plms" /><br />
+FPS<input type="range" id="fps" name="fps" value="15" min="1" max="60" step="1"/><span id="fpstext"></span>
+フレーム数<input type="range" id="max_frames" name="max_frames" value="30" min="30" max="90" step="1" /><span id="max_frames_text"></span><br />
+translation_x<input type="range" id="trx" value="0" min="-50" max="50" step="1"/><input type="text" name="translation_x" id="trxtext" /><br />
+translation_y<input type="range" id="try" value="0" min="-50" max="50" step="1"/><input type="text" name="translation_y" id="trytext" /><br />
+angle<input type="range" id="angle" value="0" min="-360" max="360" step="1"/><input type="text" name="angle" id="angletext" /><br />
+zoom<input type="range" id="zoom" value="1.04" min="0.5" max="2" step="0.01"/><input type="text" name="zoom" id="zoomtext" /><br />
+contrast<input type="range" id="contrast" value="1.0" min="0.5" max="1.0" step="0.01"/><input type="text" name="contrast" id="contrasttext" /><br />
+noise<input type="range" id="noise" value="0.04" min=" = 0.0" max="0.5" step="0.01"/><input type="text" name="noise" id="noisetext" /><br />
+strength<input type="range" value="0.75" min="0" max="0.99" step="0.01" id="s" /><input type="text" name="strength" id="strengthtext" /><br />
+Scale<input type="range" id="scale" value="7.5" max="15" min="1" step="0.1"/><input type="text" name="scale" id="scaletext" /><br />
+Seed<input type="range" id="seed" value="30" min="0" max="65535" step="1"/><input type="text" name="seed" id="seedtext" />
+<div id="opt2" class="opt">
+    <span style="color:aqua">テキスト->画像</span><br />
+    Width<input type="range" value="512" min="256" max="1024" step="64" id="W" /><input type="text" name="W" id="wtext" />px<br />
+    Height<input type="range" value="512" min="256" max="1024" step="64" id="H" /><input type="text" name="H" id="htext" />px<br /><br />
+    <button type="button" onclick="opt(3)">カスタム(画像->画像)</button>
+</div>
+<div id="opt3" class="opt">
+    <span style="color:aqua">画像->画像</span><br />
+    参考画像<input type="file" name="init_img" id="init_img" /><br /><br />
+    <button type="button" onclick="opt(2)">カスタム(テキスト->画像)</button>
+</div>
+<script type="text/javascript">
+    var submit = document.getElementById("submit")
+    submit.onclick = function () {
+        submi(async function (text) {
+            alert('10分ほどおまちください。')
+            document.getElementById("prompt").value = ""
+            document.getElementById("init_img").value = ""
+        })
+    }
+    var scale = -1, seed = -1, step = -1, w = -1, h = -1 , strength = -1, tr_x = -1, tr_y = -1, angle = -1, zoom = -1, contrast = -1, noise = -1
+    setInterval(function () {
+        if (scale != $("#scale").val()) $('#scaletext').val($('#scale').val())
+        if (seed != $("#seed").val()) $('#seedtext').val($('#seed').val())
+        if (step != $("#step").val()) $('#ddim_steptext').val($('#step').val())
+        if (w != $("#W").val()) $('#wtext').val($('#W').val())
+        if (h != $("#H").val()) $('#htext').val($('#H').val())
+        if (strength != $("#s").val()) $('#strengthtext').val($('#s').val())
+        if (tr_x != $("#trx").val()) $('#trxtext').val($('#trx').val())
+        if (tr_y != $("#try").val()) $('#trytext').val($('#try').val())
+        if (angle != $("#angle").val()) $('#angletext').val($('#angle').val())
+        if (zoom != $("#zoom").val()) $('#zoomtext').val($('#zoom').val())
+        if (contrast != $("#contrast").val()) $('#contrasttext').val($('#contrast').val())
+        if (noise != $("#noise").val()) $('#noisetext').val($('#noise').val())
+        scale = $("#scale").val()
+        seed = $("#seed").val()
+        step = $("#step").val()
+        w = $("#W").val()
+        h = $("#H").val()
+        strength = $("#s").val()
+        tr_x = $('#trx').val()
+        tr_y = $('#try').val()
+        angle = $('#angle').val()
+        zoom = $('#zoom').val()
+        contrast = $('#contrast').val()
+        noise = $('#noise').val()
+        $('#fpstext').text($('#fps').val())
+        $('#max_frames_text').text($('#max_frames').val())
+    })
+    var op = 2
+    function opt(n) {
+        var opti = document.getElementById("opt" + op)
+        opti.className = "opt"
+        op = n
+        opti = document.getElementById("opt" + op)
+        opti.className = "opt active"
+    }
+    opt(2)
+</script>
+<style type="text/css">
+    .opt {
+        display: none;
+    }
+    .opt.active {
+        display: block;
+    }
+</style>

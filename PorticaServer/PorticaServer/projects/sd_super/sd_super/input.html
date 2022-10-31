@@ -1,0 +1,432 @@
+プロンプト<input type="text" name="prompt" id="prompt"/><br />
+<button type="button" id="submit" style="padding:0px 60px">生成</button>こっそり<input type="checkbox" name="mute" value="mute"/><br />
+<select name="model">
+    <option value="sd1.4">Stable Diffusion v1.4</option>
+    <option value="wd1.2">Wifu Diffusion v1.2</option>
+</select><br />
+PLMS<input type="checkbox" name="plms" value="plms" /><br />
+Scale<input type="range" id="scale" value="7.5" max="15" min="1" step="0.1"/><input type="text" name="scale" id="scaletext" /><br />
+Seed<input type="range" id="seed" value="30" min="0" max="65535" step="1"/><input type="text" name="seed" id="seedtext" />
+<div id="opt2" class="opt">
+    <span style="color:aqua">テキスト->画像</span><br />
+    Width<input type="range" value="512" min="256" max="1024" step="64" id="W" /><input type="text" name="W" id="wtext" />px<br />
+    Height<input type="range" value="512" min="256" max="1024" step="64" id="H" /><input type="text" name="H" id="htext" />px<br /><br />
+    <button type="button" onclick="opt(3)">カスタム(画像->画像)</button>
+</div>
+<div id="opt3" class="opt">
+    <span style="color:aqua">画像->画像</span><br />
+    参考画像<input type="file" name="init_img" id="init_img" />
+    strength<input type="range" value="0.75" min="0" max="0.99" step="0.01" id="s" /><input type="text" name="strength" id="strengthtext" /><br /><br />
+    <button type="button" onclick="opt(2)">カスタム(テキスト->画像)</button>
+</div>
+<input type="hidden" id="json" name="json" />
+<input type="hidden" id="count" name="count" />
+<input type="hidden" id="post_id" name="post_id" />
+<input type="hidden" id="secret" name="secret" />
+<input type="hidden" id="key" name="key" />
+<input type="hidden" id="order" name="order" />
+<script type="text/javascript">
+    var submit = document.getElementById("submit")
+    submit.onclick = function () {
+        var prompttext = $('#prompt').val()
+        var scaletext = $('#scaletext').val()
+        var seedtext = $('#seedtext').val()
+        var wtext = $('#wtext').val()
+        var htext = $('#htext').val()
+        var strengthtext = $('#strengthtext').val()
+        var datas = []
+        var prompts = check(prompttext, "str", null, null)
+        adddata(datas, prompts, 'prompt')
+        var scales = check(scaletext, "float", 1, 15)
+        adddata(datas, scales, 'scale')
+        var seeds = check(seedtext, "int", 0, 65535)
+        adddata(datas, seeds, 'seed')
+        var ws = check(wtext, "int", 64, 1024)
+        adddata(datas, ws, 'W')
+        var hs = check(htext, "int", 64, 1024)
+        adddata(datas, hs, 'H')
+        var strengths = check(strengthtext, "float", 0.01, 0.99)
+        adddata(datas, strengths, 'strength')
+        for (var i = 0; i < datas[0].length; i++) {
+            datas.push([datas[0][i]])
+        }
+        datas[0] = []
+        alert(JSON.stringify(datas))
+        pumi = []
+        pumiawase(datas.length - 1, datas, [])
+        alert(pumi.length)
+        $("#count").val(pumi.length)
+        $("#json").val(JSON.stringify(datas))
+        $("#post_id").val("")
+        $("#totask").val("True")
+        $("#key").val("")
+        $("#order").val("")
+        submi(async function (text) {
+            $("#count").val(1)
+            var json = JSON.parse(text)
+            $("#json").val("")
+            $("#post_id").val(json["id"])
+            $("#secret").val(json["secret"])
+            $("#totask").val("")
+            for (var i = 0; i < pumi.length; i++) {
+                var ret = {}
+                var key = ""
+                for (var j = 0; j < pumi[i].length; j++) {
+                    ret[pumi[i][j]["key"]] = pumi[i][j]["val"]
+                    if (pumi[i][j]["l"] >= 2) {
+                        if (key != "") key += ";"
+                        key += pumi[i][j]["val"]
+                    }
+                }
+                $("#prompt").val(ret["prompt"])
+                $("#scaletext").val(ret["scale"])
+                $("#seedtext").val(ret["seed"])
+                $("#wtext").val(ret["W"])
+                $("#htext").val(ret["H"])
+                $("#strengthtext").val(ret["strength"])
+                $("#key").val(key)
+                $("#order").val(i)
+                await task(function (text) {
+                    //alert(text + ";" + JSON.stringify(ret))
+                })
+            }
+            $("#prompt").val(prompttext)
+            $("#scaletext").val(scaletext)
+            $("#seedtext").val(seedtext)
+            $("#wtext").val(wtext)
+            $("#htext").val(htext)
+            $("#strengthtext").val(strengthtext)
+        })
+    }
+    var pumi = []
+    function pumiawase(n, datas, results) {
+        if (n == 0) {
+            pumi.push(results)
+            return
+        }
+        if (datas[n].length == 0) {
+            pumiawase(n - 1, datas, results)
+        }
+        else {
+            for (var j = 0; ; j++) {
+                var rs = []
+                var c = 0
+                for (var i = 0; i < datas[n].length; i++) {
+                    if (j >= datas[n][i]["ret"].length) {
+                        rs.push({ "key": datas[n][i]["k"], "val": datas[n][i]["ret"][datas[n][i]["ret"].length - 1], "l": datas[n][i]["ret"].length })
+                        c++
+                    }
+                    else rs.push({ "key": datas[n][i]["k"], "val": datas[n][i]["ret"][j], "l": datas[n][i]["ret"].length })
+                }
+                if (c == datas[n].length) break
+                pumiawase(n - 1, datas, rs.concat(results))
+            }
+        }
+    }
+    function adddata(datas, ret, key) {
+        while (true) {
+            if (ret['n'] < datas.length) break
+            else datas.push([])
+        }
+        datas[ret['n']].push({ 'k': key, 'ret': ret['ret'] })
+    }
+    var scale = -1, seed = -1, step = -1, w = -1, h = -1 , strength = -1
+    setInterval(function () {
+        if (scale != $("#scale").val()) $('#scaletext').val($('#scale').val())
+        if (seed != $("#seed").val()) $('#seedtext').val($('#seed').val())
+        if (w != $("#W").val()) $('#wtext').val($('#W').val())
+        if (h != $("#H").val()) $('#htext').val($('#H').val())
+        if (strength != $("#s").val()) $('#strengthtext').val($('#s').val())
+        scale = $("#scale").val()
+        seed = $("#seed").val()
+        w = $("#W").val()
+        h = $("#H").val()
+        strength = $("#s").val()
+    })
+    var op = 2
+    function opt(n) {
+        var opti = document.getElementById("opt" + op)
+        opti.className = "opt"
+        op = n
+        opti = document.getElementById("opt" + op)
+        opti.className = "opt active"
+    }
+    opt(2)
+    function check(stri, typo, min, max) {
+        values = []
+        v = ""
+        att = "non"
+        for (var i = 0; i < stri.length;) {
+            var c = stri.charAt(i)
+            if ('0' <= c && c <= '9') {
+                v += c
+                if (att != "let") att = "num"
+                i++
+                continue
+            }
+            else if (c == ' ') {
+                v += c
+                i++
+                continue
+            }
+            else if (c == '?' || c == '+' || c == '-' || c == '.' || c == '|' || c == '@') {
+                i++
+                var count = 1
+                for (; i < stri.length; i++) {
+                    var c2 = stri.charAt(i)
+                    if (c == c2) count++
+                    else break
+                }
+                values.push({ 'ope': c, 'c': count })
+                i--
+            }
+            else if (c == '[') {
+                i++
+                val = ""
+                for (; i < stri.length; i++) {
+                    var c2 = stri.charAt(i)
+                    if (c2 == ']') {
+                        if (val == "") val = " "
+                        values.push({ "ope": c, "c": val.length, "val": val })
+                        break
+                    }
+                    val += c2
+                }
+            }
+            else if (c == '>') values.push({ "ope": c, "c": 1 })
+            else {
+                v += c
+                att = "let"
+                i++
+                continue
+            }
+            if (att == "num" || att == "let") {
+                values.splice(values.length - 1, 0, { "ope": att, "c": v.length, "val": v })
+                att = "non"
+            }
+            v = ""
+            i++
+        }
+        if (att == "num" || att == "let") values.push({ "ope": att, "c": v.length, "val": v })
+        questions = {}
+        opecount = 0
+        datas = []
+        opes = []
+        number = 0
+        i = 0
+        while (true) {
+            if (i < values.length) {
+                var val = values[i]
+                i++
+                if (val["ope"] == '?') {
+                    if (typo == "str") return
+                    question = questions[val["c"]]
+                    if (question === undefined) {
+                        if (typo == "int") {
+                            question = Math.floor(Math.random() * (max - min + 1) + min)
+                        }
+                        else if (typo == "float") {
+                            question = Math.random() * (max - min) + min
+                        }
+                        question[val["c"]] = question
+                    }
+                    if (i < values.length) {
+                        var val2 = values[i]
+                        if (val2["c"] == 1 && (val2["ope"] == '+' || val2["ope"] == 'c')) {
+                            i++
+                            if (i < values.length) {
+                                var val3 = values[i]
+                                if (val[3] == "num") {
+                                    i++
+                                    var va = val3["val"]
+                                    if (i < values.length) {
+                                        var val4 = values[i]
+                                        if (val4["ope"] == "." && val4["c"] == 1) {
+                                            i++
+                                            if (i < values.length) {
+                                                var val5 = values[i]
+                                                if (val5["ope"] == "num") {
+                                                    i++
+                                                    va = val3["val"] + "." + val5["val"]
+                                                }
+                                                else return
+                                            }
+                                            else return
+                                        }
+                                    }
+                                    if (val2["ope"] == '+') {
+                                        if (typo == "int") question += parseInt(va)
+                                        else if (typo == "float") question += parseFloat(va)
+                                        if (question > max) {
+                                            question = (question - max) % (maxo - min) + mino
+                                        }
+                                    }
+                                    else if (val2["ope"] == '+') {
+                                        if (typo == "int") question -= parseInt(va)
+                                        else if (typo == "float") question -= parseFloat(va)
+                                        if (question < min) {
+                                            question = max - (min - question) % (max - min)
+                                        }
+                                    }
+                                }
+                                else return
+                            }
+                            else return
+                        }
+                        datas.push(question)
+                    }
+                    else datas.push(question)
+                }
+                else if (val["ope"] == "let") {
+                    if (typo == "str") datas.push(val["val"])
+                    else return
+                }
+                else if (val["ope"] == "num") {
+                    var va = val["val"]
+                    if (i < values.length) {
+                        var val2 = values[i]
+                        if (val2["ope"] == '.' && val2["c"] == 1) {
+                            i++
+                            if (i < values.length) {
+                                var val3 = values[i]
+                                if (val3["ope"] == "num") {
+                                    i++
+                                    va = val["val"] + "." + val3["val"]
+                                }
+                                else return
+                            }
+                            else return
+                        }
+                    }
+                    if (typo == "int" || typo == "float") {
+                        if (typo == "int") va = parseInt(va)
+                        else if (typo == "float") va = parseFloat(va)
+                    }
+                    datas.push(va)
+                }
+                else return
+            }
+            else return
+            if (i < values.length) {
+                var val = values[i]
+                i++
+                if (val["ope"] == '.' && val["c"] == 2) {
+                    if (typo == "str") return
+                    if (opecount != 0) return
+                    opecount++
+                }
+                else if ((val["ope"] == '+' || val["ope"] == '-') && val["c"] == 2) {
+                    if (typo == "str") return
+                    if (opecount != 1) return
+                    opecount++
+                }
+                else if (val["ope"] == '[') {
+                    if (typo == "int" || typo == "float") return
+                    if (opecount == 0 || opecount == -65536) opecount = -65536
+                    else return
+                }
+                else if (val["ope"] == '|' && val["c"] == 1) {
+                    if (opecount == 0 || opecount == 65536) opecount = 65536
+                    else return
+                }
+                else if (val["ope"] == '>' && val["c"] == 1) {
+                    if (i < values.length) {
+                        var val2 = values[i]
+                        if (val2["ope"] == '@') {
+                            number = val["c"]
+                            i++
+                            break
+                        }
+                        else return
+                    }
+                    else return
+                }
+                opes.push(val)
+            }
+            else break
+        }
+        ret = []
+        if (opecount == 0) ret.push(datas[0])
+        else if (opecount == 1 || opecount == 2) {
+            var va = datas[0]
+            if (va < min) va = max - (min - va) % (max - min)
+            else if (va > max) va = min + (va - max) % (max - min)
+            mind = va
+            var va = datas[1]
+            if (va < min) va = max - (min - va) % (max - min)
+            else if (va > max) va = min + (va - max) % (max - min)
+            maxd = va
+            up = 1
+            if (opecount == 2) {
+                up = datas[2]
+            }
+            if (up > (max - min)) {
+                up = up % (max - min)
+            }
+            if (opecount == 2) {
+                if (opes[1]["ope"] == '-') up = -up
+            }
+            if (up == 0) return
+            if (up > 0) {
+                var v2 = mind
+                if (mind > maxd) {
+                    while (v2 <= max) {
+                        ret.push(v2)
+                        v2 += up
+                    }
+                    v2 = v2 - max + min
+                }
+                while (v2 <= maxd) {
+                    ret.push(v2)
+                    v2 += up
+                }
+            }
+            else {
+                var v2 = maxd
+                if (maxd < mind) {
+                    while (min <= v2) {
+                        ret.push(v2)
+                        v2 += up
+                    }
+                    v2 = max - min + v2
+                }
+                while (mind <= v2) {
+                    ret.push(v2)
+                    v2 += up
+                }
+            }
+        }
+        else if (opecount == 65536) ret = datas
+        else if (opecount == -65536) {
+            kumi = []
+            kumiawase(datas.length - 1, [])
+            for (var i = 0; i < kumi.length; i++) {
+                var vo = ""
+                for (var j = 0; j < kumi[i].length; j++) {
+                    var n = kumi[i][j]
+                    if (vo != "") vo += opes[n - 1]["val"]
+                    vo += datas[n]
+                }
+                if (vo != "") ret.push(vo)
+            }
+        }
+        return { 'ret': ret, 'n': number }
+    }
+    var kumi = []
+    function kumiawase(n, datas) {
+        if (n == -1) {
+            kumi.push(datas)
+            return
+        }
+        kumiawase(n - 1, [n].concat(datas))
+        kumiawase(n - 1, datas)
+    }
+</script>
+<style type="text/css">
+    .opt {
+        display: none;
+    }
+    .opt.active {
+        display: block;
+    }
+</style>

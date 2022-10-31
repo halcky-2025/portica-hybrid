@@ -1,0 +1,10 @@
+﻿{
+  "name": "動画Diffusion",
+  "version": "0.1",
+  "order": "..",
+  "prepare":  "..",
+  "complete":  "..",
+  "task": "AI:stable_diffusion",
+  "before": 1,
+  "totask": "continue" 
+}

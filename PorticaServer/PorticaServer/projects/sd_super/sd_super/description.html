@@ -1,0 +1,241 @@
+﻿<div>プロンプト{{ prompt }}</div>
+<div>Scale{{options.scale}}</div>
+<div>Seed{{options.seed}}</div>
+<div>Width{{options.W}}</div>
+<div>Height{{options.H}}</div>
+{%  if  options.init_img %}
+初期画像
+<img style="width:20%" src="/r/{{ options.init_img.address}}" />
+{% endif %}
+<div>Strength{{options.strength}}</div>
+
+<div id="label"></div>
+<div id="xyform"></div>
+<script type="text/javascript">
+    var datas = {{ options.json | safe}}
+    var output = {{ output | safe}}
+    var type = "{{ output_type | safe}}"
+</script>
+<script type="text/javascript">
+    var x = -1
+    var y = -1
+    var is = []
+    var vs = []
+    var ds = []
+    var id = 0
+    var fn;
+    function dimensions() {
+        var label = document.getElementById("label")
+        for (var i = 0; i < datas.length; i++) {
+            for (var j = 0; j < datas[i].length; j++) {
+                if (datas[i][j]["ret"].length >= 2) {
+                    (function () {
+                        ds.push({ "k": datas[i][j]["key"], "i": i, "j": j })
+                        is.push(0)
+                        vs.push(0)
+                        var select = document.createElement("select")
+                        select.id = "s" + id
+                        for (var k = 0; k < datas[i][j]["ret"].length; k++) {
+                            var option = document.createElement("option")
+                            option.text = datas[i][j]["ret"][k]
+                            option.value = k
+                            select.appendChild(option)
+                        }
+                        var optionx = document.createElement("option")
+                        optionx.text = "X"
+                        optionx.value = "X"
+                        select.appendChild(optionx)
+                        var optiony = document.createElement("option")
+                        optiony.text = "Y"
+                        optiony.value = "Y"
+                        select.appendChild(optiony)
+                        label.appendChild(select);
+                        var ins = id
+                        //$("#s" + ins).change(function () {
+                        //    var val = $(this).val()
+                        fn = function () {
+                            var val = select.value
+                            if (val == "X") {
+                                if (vs[ins] == "X") return
+                                else if (vs[ins] == "Y") y = -1
+                                for (var k = 0; k < ds.length; k++) {
+                                    if (ds[k]["k"] == x) {
+                                        $("#s" + k).val(is[k])
+                                        break
+                                    }
+                                    else if (ds[k]["i"] == ds[ins]["i"]) {
+                                        $("#s" + k).val("X")
+                                        vs[k] = "X"
+                                    }
+                                }
+                                x = ds[ins]["i"]
+                            }
+                            else if (val == "Y") {
+                                if (vs[ins] == "Y") return
+                                else if (vs[ins] == "X") x = -1
+                                for (var k = 0; k < ds.length; k++) {
+                                    if (ds[k]["i"] == y) {
+                                        $("#s" + k).val(is[k])
+                                    }
+                                    else if (ds[k]["i"] == ds[ins]["i"]) {
+                                        $("#s" + k).val("Y")
+                                        vs[k] = "Y"
+                                    }
+                                }
+                                y = ds[ins]["i"]
+                            }
+                            else {
+                                var n = parseInt(val)
+                                if (vs[ins] == "X") x = -1
+                                else if (vs[ins] == "Y") y = -1
+                                var i = ds[ins]["i"]
+                                for (var k = 0; k < ds.length; k++) {
+                                    if (ds[ins]["i"] == ds[k]["i"]) {
+                                        if (n < datas[i][ds[k]["j"]]["ret"].length) {
+                                            is[k] = n
+                                        }
+                                        else is[k] = datas[i][ds[k]["j"]]["ret"].length - 1
+                                        $("#s" + k).val(is[k])
+                                        vs[k] = "" + is[k]
+                                    }
+                                }
+                            }
+                            vs[ins] = val
+                            xyform()
+                        }
+                        select.addEventListener('change', fn)
+                    })()
+                    id++
+                }
+            }
+        }
+    }
+    function xyform() {
+        var xy = document.getElementById("xyform")
+        while (xy.firstChild) {
+            xy.removeChild(xy.firstChild);
+        }
+        var xs = [], ys = []
+        var xmax, ymax
+        var ix, iy
+        var reverse = false
+        if (x != -1) {
+            for (var i = 0; i < datas[x].length; i++) {
+                xs.push(datas[x][i]["ret"].length)
+            }
+            xmax = Math.max(xs)
+            ix = x
+        }
+        else xmax = -1
+        if (y != -1) {
+            for (var i = 0; i < datas[y].length; i++) {
+                ys.push(datas[y][i]["ret"].length)
+            }
+            if (xmax == -1) {
+                xmax = Math.max(ys)
+                ix = y
+                reverse = true
+            }
+            else {
+                ymax = Math.max(ys)
+                iy = y
+            }
+        }
+        else ymax = -1
+        if (xmax == -1 && ymax == -1) {
+            var img = document.createElement("img")
+            img.style.width = "100%"
+            img.src = "/r/" + output[makekey(-1, -1, reverse)]["output"]
+            xy.appendChild(img)
+
+        }
+        else if (ymax == -1) {
+            var xs = document.createElement("div")
+            xy.appendChild(xs)
+            for (var i = 0; i < xmax; i++) {
+                var labelx = document.createElement("div")
+                labelx.style.display = "inline-block"
+                labelx.style.width = (100 / xmax) + "%"
+                for (var j = 0; j < datas[ix].length; j++) {
+                    if (labelx.innerText != "") labelx.innerText += "&nbsp"
+                    if (i < datas[ix][j]["ret"].length) labelx.innerText += datas[ix][j]["ret"][i]
+                    else labelx.innerText += datas[ix][j]["ret"][datas[ix][j]["ret"].length - 1]
+                }
+                xs.appendChild(labelx)
+            }
+            var div = document.createElement("div")
+            xy.appendChild(div)
+            for (var j = 0; j < xmax; j++) {
+                var img = document.createElement("img")
+                img.src = "/r/" + output[makekey(j, -1, reverse)]["output"]
+                img.style.width = (100 / xmax) + "%"
+                div.appendChild(img)
+            }
+        }
+        else {
+            var xs = document.createElement("div")
+            xy.appendChild(xs)
+            var labelx = document.createElement("div")
+            labelx.style.display = "inline-block"
+            labelx.style.width = (100 / (xmax + 1)) + "%"
+            xs.appendChild(labelx)
+            for (var i = 0; i < xmax; i++) {
+                var labelx = document.createElement("div")
+                labelx.style.display = "inline-block"
+                labelx.style.width = (100 / (xmax + 1)) + "%"
+                for (var j = 0; j < datas[ix].length; j++) {
+                    if (labelx.innerText != "") labelx.innerText += "&nbsp"
+                    if (i < datas[ix][j]["ret"].length) labelx.innerText += datas[ix][j]["ret"][i]
+                    else labelx.innerText += datas[ix][j]["ret"][datas[ix][j]["ret"].length - 1]
+                }
+                xs.appendChild(labelx)
+            }
+            for (var i = 0; i < ymax; i++) {
+                var div = document.createElement("div")
+                xy.appendChild(div)
+                var labely = document.createElement("div")
+                labely.style.display = "inline-block"
+                labely.style.width = (100 / (xmax + 1)) + "%"
+                for (var j = 0; j < datas[iy].length; j++) {
+                    if (labely.innerText != "") labely.innerText += "&nbsp"
+                    if (i < datas[iy][j]["ret"].length) labely.innerText += datas[iy][j]["ret"][i]
+                    else labely.innerText += datas[iy][j]["ret"][datas[iy][j]["ret"].length - 1]
+                }
+                div.appendChild(labely)
+                for (var j = 0; j < xmax; j++) {
+                    var img = document.createElement("img")
+                    img.src = "/r/" + output[makekey(j, i, reverse)]["output"]
+                    img.style.width = (100 / (xmax + 1)) + "%"
+                    div.appendChild(img)
+                }
+            }
+        }
+    }
+    function makekey(x, y, reverse) {
+        var k = ""
+        for (var i = 0; i < ds.length; i++) {
+            if (k != "") k += ";"
+            var n = 0
+            if (reverse) {
+                if (vs[i] == "X") n = y
+                else if (vs[i] == "Y") n = x
+                else n = parseInt(vs[i])
+            }
+            else {
+                if (vs[i] == "X") n = x
+                else if (vs[i] == "Y") n = y
+                else n = parseInt(vs[i])
+            }
+            var ret = datas[ds[i]["i"]][ds[i]["j"]]["ret"]
+            if (n < ret.length) k += ret[n]
+            else k += ret[ret.length - 1]
+        }
+        return k
+    }
+    dimensions()
+    if (fn !== undefined) fn()
+    else {
+        xyform()
+    }
+
+</script>

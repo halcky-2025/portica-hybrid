@@ -1,0 +1,8 @@
+﻿<div>{{ prompt }}({{post_type}})<input type="button" value="詳細" onclick="show('{{ secret }}')" /></div>
+{% if output_type == "mov" %}
+<video controls style="width:100%">
+    <source src="/r/{{ output }}" type="video/mp4">
+</video>
+{% else %}
+生成中
+{% endif %}
